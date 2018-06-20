@@ -128,12 +128,12 @@ class Serializer
             return SplFixedArraySerializer::serialize($this, $value);
         }
 
-        if (\is_object($value)) {
-            return $this->serializeObject($value);
-        }
-
         if ($value instanceof \ArrayAccess) {
             return $this->serializeArray($value);
+        }
+
+        if (\is_object($value)) {
+            return $this->serializeObject($value);
         }
 
         $type = (\gettype($value) && $value !== null) ? \gettype($value) : 'string';
