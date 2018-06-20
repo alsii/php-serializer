@@ -411,10 +411,10 @@ class Serializer
     /**
      * @param array $value
      *
-     * @return array
+     * @return array | \ArrayAccess
      * @throws ReflectionException
      */
-    protected function serializeArray(array $value)
+    protected function serializeArray($value)
     {
         if (\array_key_exists(self::MAP_TYPE, $value)) {
             return $value;
