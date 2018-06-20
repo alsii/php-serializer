@@ -11,7 +11,6 @@
 
 namespace NilPortugues\Test\Serializer\Transformer;
 
-use DateTime;
 use NilPortugues\Serializer\DeepCopySerializer;
 use NilPortugues\Serializer\Transformer\YamlTransformer;
 use NilPortugues\Test\Serializer\Dummy\ComplexObject\Comment;
@@ -60,8 +59,8 @@ comments:
                     'Have no fear, sers, your king is safe.',
                     new User(new UserId(2), 'Barristan Selmy'),
                     [
-                        'created_at' => (new DateTime('2015/07/18 12:13:00'))->format('c'),
-                        'accepted_at' => (new DateTime('2015/07/19 00:00:00'))->format('c'),
+                        'created_at' => '2015-07-18T12:13:00+02:00',
+                        'accepted_at' => '2015-07-19T00:00:00+02:00',
                     ]
                 ),
             ]
@@ -94,7 +93,7 @@ comments:
     {
         $serialize = new DeepCopySerializer(new YamlTransformer());
 
-        $this->setExpectedException(\InvalidArgumentException::class);
+        $this->expectException(\InvalidArgumentException::class);
         $serialize->unserialize($serialize->serialize($this->getObject()));
     }
 }

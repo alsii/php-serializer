@@ -11,7 +11,6 @@
 
 namespace NilPortugues\Test\Serializer\Transformer;
 
-use DateTime;
 use NilPortugues\Serializer\DeepCopySerializer;
 use NilPortugues\Serializer\Transformer\ArrayTransformer;
 use NilPortugues\Test\Serializer\Dummy\ComplexObject\Comment;
@@ -23,6 +22,9 @@ use NilPortugues\Test\Serializer\Dummy\ComplexObject\ValueObject\UserId;
 
 class ArrayTransformerTest extends \PHPUnit_Framework_TestCase
 {
+    const DATE_CREATED = '2015-07-18T12:13:00+02:00';
+    const DATE_ACCEPTED = '2015-07-19T00:00:00+02:00';
+
     public function testSerialization()
     {
         $object = $this->getObject();
@@ -40,8 +42,8 @@ class ArrayTransformerTest extends \PHPUnit_Framework_TestCase
                     0 => array(
                             'commentId' => 1000,
                             'dates' => array(
-                                    'created_at' => '2015-07-18T12:13:00+02:00',
-                                    'accepted_at' => '2015-07-19T00:00:00+02:00',
+                                    'created_at' => self::DATE_CREATED,
+                                    'accepted_at' => self::DATE_ACCEPTED,
                                 ),
                             'comment' => 'Have no fear, sers, your king is safe.',
                             'user' => array(
@@ -74,8 +76,8 @@ class ArrayTransformerTest extends \PHPUnit_Framework_TestCase
                     'Have no fear, sers, your king is safe.',
                     new User(new UserId(2), 'Barristan Selmy'),
                     [
-                        'created_at' => (new DateTime('2015/07/18 12:13:00'))->format('c'),
-                        'accepted_at' => (new DateTime('2015/07/19 00:00:00'))->format('c'),
+                        'created_at' => self::DATE_CREATED,
+                        'accepted_at' => self::DATE_ACCEPTED,
                     ]
                 ),
             ]
@@ -100,8 +102,8 @@ class ArrayTransformerTest extends \PHPUnit_Framework_TestCase
                             0 => array(
                                     'commentId' => 1000,
                                     'dates' => array(
-                                            'created_at' => '2015-07-18T12:13:00+02:00',
-                                            'accepted_at' => '2015-07-19T00:00:00+02:00',
+                                            'created_at' => self::DATE_CREATED,
+                                            'accepted_at' => self::DATE_ACCEPTED,
                                         ),
                                     'comment' => 'Have no fear, sers, your king is safe.',
                                     'user' => array(
@@ -123,8 +125,8 @@ class ArrayTransformerTest extends \PHPUnit_Framework_TestCase
                             0 => array(
                                     'commentId' => 1000,
                                     'dates' => array(
-                                            'created_at' => '2015-07-18T12:13:00+02:00',
-                                            'accepted_at' => '2015-07-19T00:00:00+02:00',
+                                            'created_at' => self::DATE_CREATED,
+                                            'accepted_at' => self::DATE_ACCEPTED,
                                         ),
                                     'comment' => 'Have no fear, sers, your king is safe.',
                                     'user' => array(

@@ -11,7 +11,6 @@
 
 namespace NilPortugues\Test\Serializer\Transformer;
 
-use DateTime;
 use NilPortugues\Serializer\DeepCopySerializer;
 use NilPortugues\Serializer\Transformer\FlatArrayTransformer;
 use NilPortugues\Test\Serializer\Dummy\ComplexObject\Comment;
@@ -23,6 +22,9 @@ use NilPortugues\Test\Serializer\Dummy\ComplexObject\ValueObject\UserId;
 
 class FlatArrayTransformerTest extends \PHPUnit_Framework_TestCase
 {
+    const DATE_CREATED = '2015-07-18T12:13:00+02:00';
+    const DATE_ACCEPTED = '2015-07-19T00:00:00+02:00';
+
     public function testSerialization()
     {
         $object = $this->getObject();
@@ -35,8 +37,8 @@ class FlatArrayTransformerTest extends \PHPUnit_Framework_TestCase
             'author.userId' => 1,
             'author.name' => 'Post Author',
             'comments.0.commentId' => 1000,
-            'comments.0.dates.created_at' => '2015-07-18T12:13:00+02:00',
-            'comments.0.dates.accepted_at' => '2015-07-19T00:00:00+02:00',
+            'comments.0.dates.created_at' => self::DATE_CREATED,
+            'comments.0.dates.accepted_at' => self::DATE_ACCEPTED,
             'comments.0.comment' => 'Have no fear, sers, your king is safe.',
             'comments.0.user.userId' => 2,
             'comments.0.user.name' => 'Barristan Selmy',
@@ -65,8 +67,8 @@ class FlatArrayTransformerTest extends \PHPUnit_Framework_TestCase
                     'Have no fear, sers, your king is safe.',
                     new User(new UserId(2), 'Barristan Selmy'),
                     [
-                        'created_at' => (new DateTime('2015/07/18 12:13:00'))->format('c'),
-                        'accepted_at' => (new DateTime('2015/07/19 00:00:00'))->format('c'),
+                        'created_at' => self::DATE_CREATED,
+                        'accepted_at' => self::DATE_ACCEPTED,
                     ]
                 ),
             ]
@@ -85,8 +87,8 @@ class FlatArrayTransformerTest extends \PHPUnit_Framework_TestCase
             '0.author.userId' => 1,
             '0.author.name' => 'Post Author',
             '0.comments.0.commentId' => 1000,
-            '0.comments.0.dates.created_at' => '2015-07-18T12:13:00+02:00',
-            '0.comments.0.dates.accepted_at' => '2015-07-19T00:00:00+02:00',
+            '0.comments.0.dates.created_at' => self::DATE_CREATED,
+            '0.comments.0.dates.accepted_at' => self::DATE_ACCEPTED,
             '0.comments.0.comment' => 'Have no fear, sers, your king is safe.',
             '0.comments.0.user.userId' => 2,
             '0.comments.0.user.name' => 'Barristan Selmy',
@@ -96,8 +98,8 @@ class FlatArrayTransformerTest extends \PHPUnit_Framework_TestCase
             '1.author.userId' => 1,
             '1.author.name' => 'Post Author',
             '1.comments.0.commentId' => 1000,
-            '1.comments.0.dates.created_at' => '2015-07-18T12:13:00+02:00',
-            '1.comments.0.dates.accepted_at' => '2015-07-19T00:00:00+02:00',
+            '1.comments.0.dates.created_at' => self::DATE_CREATED,
+            '1.comments.0.dates.accepted_at' => self::DATE_ACCEPTED,
             '1.comments.0.comment' => 'Have no fear, sers, your king is safe.',
             '1.comments.0.user.userId' => 2,
             '1.comments.0.user.name' => 'Barristan Selmy',
