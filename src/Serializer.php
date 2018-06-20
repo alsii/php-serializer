@@ -17,6 +17,16 @@ class Serializer
     const SCALAR_VALUE = '@value';
     const NULL_VAR = null;
     const MAP_TYPE = '@map';
+    const DATE_TIME_CLASS_TYPE = ['DateTime', 'DateTimeImmutable', 'DateTimeZone', 'DateInterval', 'DatePeriod'];
+
+    const SERIALIZATION_MAP = [
+        'array' => 'serializeArray',
+        'integer' => 'serializeScalar',
+        'double' => 'serializeScalar',
+        'boolean' => 'serializeScalar',
+        'string' => 'serializeScalar',
+    ];
+
 
     /**
      * Storage for object.
@@ -45,22 +55,6 @@ class Serializer
      * @var \NilPortugues\Serializer\Strategy\StrategyInterface|\NilPortugues\Serializer\Strategy\JsonStrategy
      */
     protected $serializationStrategy;
-
-    /**
-     * @var array
-     */
-    private $dateTimeClassType = ['DateTime', 'DateTimeImmutable', 'DateTimeZone', 'DateInterval', 'DatePeriod'];
-
-    /**
-     * @var array
-     */
-    protected $serializationMap = [
-        'array' => 'serializeArray',
-        'integer' => 'serializeScalar',
-        'double' => 'serializeScalar',
-        'boolean' => 'serializeScalar',
-        'string' => 'serializeScalar',
-    ];
 
     /**
      * Hack specific serialization classes.
@@ -97,6 +91,7 @@ class Serializer
      * @return string JSON encoded
      *
      * @throws SerializerException
+     * @throws ReflectionException
      */
     public function serialize($value)
     {
@@ -123,6 +118,7 @@ class Serializer
      * @return mixed
      *
      * @throws SerializerException
+     * @throws ReflectionException
      */
     protected function serializeData($value)
     {
@@ -136,8 +132,12 @@ class Serializer
             return $this->serializeObject($value);
         }
 
+        if ($value instanceof \ArrayAccess) {
+            return $this->serializeArray($value);
+        }
+
         $type = (\gettype($value) && $value !== null) ? \gettype($value) : 'string';
-        $func = $this->serializationMap[$type];
+        $func = self::SERIALIZATION_MAP[$type];
 
         return $this->$func($value);
     }
@@ -184,6 +184,7 @@ class Serializer
      * @param mixed $value
      *
      * @return mixed
+     * @throws ReflectionException
      */
     public function unserialize($value)
     {
@@ -202,6 +203,7 @@ class Serializer
      * @param mixed $value
      *
      * @return mixed
+     * @throws ReflectionException
      */
     protected function unserializeData($value)
     {
@@ -239,9 +241,9 @@ class Serializer
     {
         switch ($value[self::SCALAR_TYPE]) {
             case 'integer':
-                return \intval($value[self::SCALAR_VALUE]);
+                return (int) $value[self::SCALAR_VALUE];
             case 'float':
-                return \floatval($value[self::SCALAR_VALUE]);
+                return (float) $value[self::SCALAR_VALUE];
             case 'boolean':
                 return $value[self::SCALAR_VALUE];
             case 'NULL':
@@ -259,6 +261,7 @@ class Serializer
      * @return object
      *
      * @throws SerializerException
+     * @throws ReflectionException
      */
     protected function unserializeObject(array $value)
     {
@@ -266,8 +269,7 @@ class Serializer
         unset($value[self::CLASS_IDENTIFIER_KEY]);
 
         if (isset($value[self::MAP_TYPE])) {
-            unset($value[self::MAP_TYPE]);
-            unset($value[self::SCALAR_VALUE]);
+            unset($value[self::MAP_TYPE], $value[self::SCALAR_VALUE]);
         }
 
         if ($className[0] === '@') {
@@ -283,10 +285,11 @@ class Serializer
     }
 
     /**
-     * @param array  $value
+     * @param array $value
      * @param string $className
      *
      * @return mixed
+     * @throws ReflectionException
      */
     protected function unserializeDateTimeFamilyObject(array $value, $className)
     {
@@ -309,7 +312,7 @@ class Serializer
     {
         $isDateTime = false;
 
-        foreach ($this->dateTimeClassType as $class) {
+        foreach (self::DATE_TIME_CLASS_TYPE as $class) {
             $isDateTime = $isDateTime || \is_subclass_of($className, $class, true) || $class === $className;
         }
 
@@ -318,15 +321,18 @@ class Serializer
 
     /**
      * @param string $className
-     * @param array  $attributes
+     * @param array $attributes
      *
      * @return mixed
+     * @throws ReflectionException
      */
     protected function restoreUsingUnserialize($className, array $attributes)
     {
         foreach ($attributes as &$attribute) {
+            /** @noinspection ReferenceMismatchInspection */
             $attribute = $this->unserializeData($attribute);
         }
+        unset($attribute);
 
         $obj = (object) $attributes;
         $serialized = \preg_replace(
@@ -339,10 +345,11 @@ class Serializer
     }
 
     /**
-     * @param array  $value
+     * @param array $value
      * @param string $className
      *
      * @return object
+     * @throws ReflectionException
      */
     protected function unserializeUserDefinedObject(array $value, $className)
     {
@@ -353,6 +360,7 @@ class Serializer
         $this->setUnserializedObjectProperties($value, $ref, $obj);
 
         if (\method_exists($obj, '__wakeup')) {
+            /** @noinspection ImplicitMagicMethodCallInspection */
             $obj->__wakeup();
         }
 
@@ -360,11 +368,12 @@ class Serializer
     }
 
     /**
-     * @param array           $value
+     * @param array $value
      * @param ReflectionClass $ref
-     * @param mixed           $obj
+     * @param mixed $obj
      *
      * @return mixed
+     * @throws ReflectionException
      */
     protected function setUnserializedObjectProperties(array $value, ReflectionClass $ref, $obj)
     {
@@ -384,7 +393,7 @@ class Serializer
     /**
      * @param $value
      *
-     * @return string
+     * @return array
      */
     protected function serializeScalar($value)
     {
@@ -403,6 +412,7 @@ class Serializer
      * @param array $value
      *
      * @return array
+     * @throws ReflectionException
      */
     protected function serializeArray(array $value)
     {
@@ -424,6 +434,7 @@ class Serializer
      * @param mixed $value
      *
      * @return array
+     * @throws ReflectionException
      */
     protected function serializeObject($value)
     {
@@ -450,6 +461,7 @@ class Serializer
     {
         $paramsToSerialize = $this->getObjectProperties($ref, $value);
         $data = [self::CLASS_IDENTIFIER_KEY => $className];
+        /** @noinspection AdditionOperationOnArraysInspection */
         $data += \array_map([$this, 'serializeData'], $this->extractObjectData($value, $ref, $paramsToSerialize));
 
         return $data;
@@ -501,13 +513,13 @@ class Serializer
     protected function extractCurrentObjectProperties($value, ReflectionClass $rc, array $properties, array &$data)
     {
         foreach ($properties as $propertyName) {
-            try {
+//            try {
                 $propRef = $rc->getProperty($propertyName);
                 $propRef->setAccessible(true);
                 $data[$propertyName] = $propRef->getValue($value);
-            } catch (ReflectionException $e) {
-                $data[$propertyName] = $value->$propertyName;
-            }
+//            } catch (ReflectionException $e) {
+//                $data[$propertyName] = $value->$propertyName;
+//            }
         }
     }
 
@@ -525,6 +537,8 @@ class Serializer
                 $property->setAccessible(true);
                 $rp[$property->getName()] = $property->getValue($value);
             }
+            /** @noinspection SlowArrayOperationsInLoopInspection */
+            /** @noinspection ReferenceMismatchInspection */
             $data = \array_merge($rp, $data);
         } while ($rc = $rc->getParentClass());
     }
